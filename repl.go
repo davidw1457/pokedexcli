@@ -1,13 +1,14 @@
 package main
 
 import (
-    "bufio"
-    "fmt"
-    "os"
-    "strings"
+	"bufio"
+	"fmt"
+	"github.com/davidw1457/pokedexcli/internal/pokeapi"
+	"os"
+	"strings"
 )
 
-func startRepl() {
+func startRepl(cfg *config) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Pokedex > ")
@@ -17,41 +18,60 @@ func startRepl() {
 			os.Exit(1)
 		}
 		input := cleanInput(scanner.Text())
-        
-        if command, ok := getCommands()[input[0]]; ok {
-            err := command.callback()
-            if err != nil {
-                fmt.Println(err)
-            }
-        } else {
-            fmt.Println("Unknown command")
-        }
+		if len(input) == 0 {
+			continue
+		}
+
+		if command, ok := getCommands()[input[0]]; ok {
+			err := command.callback(cfg)
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			fmt.Println("Unknown command")
+		}
 	}
 
 }
 
 func cleanInput(text string) []string {
-    words := strings.ToLower(text)
-    return strings.Fields(words)
+	words := strings.ToLower(text)
+	return strings.Fields(words)
 }
 
 type cliCommand struct {
-    name string
-    description string
-    callback func() error
+	name        string
+	description string
+	callback    func(c *config) error
 }
 
 func getCommands() map[string]cliCommand {
-    return map[string]cliCommand{
-        "help": {
-            name: "help",
-            description: "Displays a help message",
-            callback: commandHelp,
-        },
-        "exit": {
-            name: "exit",
-            description: "Exit the Pokedex",
-            callback: commandExit,
-        },
-    }
+	return map[string]cliCommand{
+		"help": {
+			name:        "help",
+			description: "Displays a help message",
+			callback:    commandHelp,
+		},
+		"exit": {
+			name:        "exit",
+			description: "Exit the Pokedex",
+			callback:    commandExit,
+		},
+		"map": {
+			name:        "map",
+			description: "List next 20 locations",
+			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "List previous 20 locations",
+			callback:    commandMapb,
+		},
+	}
+}
+
+type config struct {
+	pokeapiClient pokeapi.Client
+	Next          *string
+	Previous      *string
 }
