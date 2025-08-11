@@ -17,13 +17,16 @@ func startRepl(cfg *config) {
 			fmt.Println(scanner.Err())
 			os.Exit(1)
 		}
+
 		input := cleanInput(scanner.Text())
 		if len(input) == 0 {
 			continue
-		}
+		} else if len(input) == 1 {
+            input = append(input, "")
+        }
 
 		if command, ok := getCommands()[input[0]]; ok {
-			err := command.callback(cfg)
+            err := command.callback(cfg, input[1:]...)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -31,7 +34,6 @@ func startRepl(cfg *config) {
 			fmt.Println("Unknown command")
 		}
 	}
-
 }
 
 func cleanInput(text string) []string {
@@ -42,7 +44,7 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(c *config) error
+	callback    func(c *config, args ...string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -67,6 +69,11 @@ func getCommands() map[string]cliCommand {
 			description: "List previous 20 locations",
 			callback:    commandMapb,
 		},
+        "explore": {
+            name: "explore",
+            description: "Enter explore <LOCATION> to show the pokemon present in the location",
+            callback: commandExplore,
+        },
 	}
 }
 

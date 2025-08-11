@@ -4,14 +4,14 @@ import (
 	"fmt"
 )
 
-func commandMap(c *config) error {
+func commandMap(c *config, _ ...string) error {
 	if c.Next == nil && c.Previous != nil {
 		return fmt.Errorf("you're on the last page")
 	}
 	return Map(c, c.Next, "last")
 }
 
-func commandMapb(c *config) error {
+func commandMapb(c *config, _ ...string) error {
 	if c.Previous == nil {
 		return fmt.Errorf("you're on the first page")
 	}
